@@ -1,4 +1,4 @@
-pub mod resource_readwriter {
+pub mod resource_controller {
     pub struct Resource {
         pub value: u32,
     }

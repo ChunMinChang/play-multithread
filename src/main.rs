@@ -1,5 +1,5 @@
 extern crate multithread;
-use multithread::resource_readwriter::*;
+use multithread::resource_controller::*;
 use std::thread;
 use std::time::Duration;
 
