@@ -24,25 +24,26 @@ pub mod resource_controller {
         use super::*;
         use std::thread;
         use std::time::Duration;
+        const SLEEP_TIME: u64 = 10;
 
         #[test]
         fn test_write_then_read_thread1() {
             set_resource(100);
-            thread::sleep(Duration::from_millis(10));
+            thread::sleep(Duration::from_millis(SLEEP_TIME));
             assert_eq!(100, get_resource().value);
         }
 
         #[test]
         fn test_write_then_read_thread2() {
             set_resource(200);
-            thread::sleep(Duration::from_millis(10));
+            thread::sleep(Duration::from_millis(SLEEP_TIME));
             assert_eq!(200, get_resource().value);
         }
 
         #[test]
         fn test_write_then_read_thread3() {
             take_control().value = 300;
-            thread::sleep(Duration::from_millis(10));
+            thread::sleep(Duration::from_millis(SLEEP_TIME));
             assert_eq!(300, take_control().value);
         }
     }
