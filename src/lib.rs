@@ -15,6 +15,10 @@ pub mod resource_readwriter {
         }
     }
 
+    pub fn take_control<'a>() -> &'a mut Resource {
+        unsafe { &mut RESOURCE }
+    }
+
     #[cfg(test)]
     mod tester {
         use super::*;
@@ -33,6 +37,13 @@ pub mod resource_readwriter {
             set_resource(200);
             thread::sleep(Duration::from_millis(10));
             assert_eq!(200, get_resource().value);
+        }
+
+        #[test]
+        fn test_write_then_read_thread3() {
+            take_control().value = 300;
+            thread::sleep(Duration::from_millis(10));
+            assert_eq!(300, take_control().value);
         }
     }
 }
