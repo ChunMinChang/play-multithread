@@ -1,22 +1,38 @@
+#[macro_use]
+extern crate lazy_static;
+
 pub mod resource_controller {
+    use std::sync::Mutex;
+
     pub struct Resource {
         pub value: u32,
     }
 
-    static mut RESOURCE: Resource = Resource { value: 0 };
+    lazy_static! {
+        static ref RESOURCE: Mutex<Resource> = Mutex::new(Resource { value: 0 });
+    }
 
-    pub fn get_resource<'a>() -> &'a Resource {
-        unsafe { &RESOURCE }
+    pub fn get_value() -> u32 {
+        RESOURCE.lock().unwrap().value
+    }
+
+    pub fn set_value(value: u32) {
+        let mut guard = RESOURCE.lock().unwrap();
+        guard.value = value;
+    }
+
+    pub fn get_resource() -> *const Resource {
+        let guard = RESOURCE.lock().unwrap();
+        &*guard
     }
 
     pub fn set_resource(resource: Resource) {
-        unsafe {
-            RESOURCE = resource;
-        }
+        let mut guard = RESOURCE.lock().unwrap();
+        *guard = resource;
     }
 
-    pub fn take_control<'a>() -> &'a mut Resource {
-        unsafe { &mut RESOURCE }
+    pub fn take_control<'a>() -> &'a Mutex<Resource> {
+        &RESOURCE
     }
 
     #[cfg(test)]
@@ -29,25 +45,57 @@ pub mod resource_controller {
         // The following tests are very likely to fail since
         // methods in `resource_controller` are not thread-safe!
         #[test]
-        fn test_write_then_read_thread1() {
-            let resource: &mut Resource = take_control();
-            resource.value = 100;
-            thread::sleep(Duration::from_millis(SLEEP_TIME));
-            assert_eq!(100, resource.value);
+        #[ignore]
+        // $ cargo test -- --ignored
+        fn deadlock() {
+            // The scope of guard is a critical section
+            let _guard = take_control().lock().unwrap();
+            // `get_value()` requests for the mutex that is locked by this
+            // thread itself again, so it leads to a deadlock.
+            get_value();
         }
 
         #[test]
-        fn test_write_then_read_thread2() {
-            set_resource(Resource { value: 200 });
+        fn no_deadlock() {
+            // Acquire a mutex, do nothing, then release the mutex.
+            get_value();
+            // Acquire a mutex that is already released.
+            let _guard = take_control().lock().unwrap();
+            // The mutex is release after guard goes out '}' below.
+        }
+
+        // This test will pass since all the operations are in the same
+        // critical section.
+        #[test]
+        fn test_write_then_read_thread1() {
+            // The scope of guard is a critical section, so no other threads
+            // can read or write `RESOURCE` once guard is created.
+            let mut guard = take_control().lock().unwrap();
+            (*guard).value = 100;
             thread::sleep(Duration::from_millis(SLEEP_TIME));
-            assert_eq!(200, get_resource().value);
+            assert_eq!(100, (*guard).value);
+        }
+
+        // The following tests are very likely to fail.
+        // Before checking `get_value()` with `x` where `x` is the value
+        // passed in `set_value(x)`, the `value` of `RESOURCE` may be changed
+        // once `set_value(x)` is finished. `set_value` and `get_value` are in
+        // different critical section.
+        #[test]
+        fn test_write_then_read_thread2() {
+            set_value(200);
+            thread::sleep(Duration::from_millis(SLEEP_TIME));
+            assert_eq!(200, get_value());
         }
 
         #[test]
         fn test_write_then_read_thread3() {
             set_resource(Resource { value: 300 });
             thread::sleep(Duration::from_millis(SLEEP_TIME));
-            assert_eq!(300, get_resource().value);
+            unsafe {
+                let resource = &*get_resource();
+                assert_eq!(300, resource.value);
+            }
         }
     }
 }
