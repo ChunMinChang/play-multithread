@@ -1,5 +1,5 @@
 [package]
-name = "multithread"
+name = "play_multithread"
 version = "0.1.0"
 authors = ["Chun-Min Chang <chun.m.chang@gmail.com>"]
 

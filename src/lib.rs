@@ -26,6 +26,8 @@ pub mod resource_controller {
         use std::time::Duration;
         const SLEEP_TIME: u64 = 10;
 
+        // The following tests are very likely to fail since
+        // methods in `resource_controller` are not thread-safe!
         #[test]
         fn test_write_then_read_thread1() {
             let resource: &mut Resource = take_control();
