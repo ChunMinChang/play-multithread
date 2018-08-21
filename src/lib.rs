@@ -28,9 +28,10 @@ pub mod resource_controller {
 
         #[test]
         fn test_write_then_read_thread1() {
-            set_resource(Resource { value: 100 });
+            let resource: &mut Resource = take_control();
+            resource.value = 100;
             thread::sleep(Duration::from_millis(SLEEP_TIME));
-            assert_eq!(100, get_resource().value);
+            assert_eq!(100, resource.value);
         }
 
         #[test]
@@ -42,9 +43,9 @@ pub mod resource_controller {
 
         #[test]
         fn test_write_then_read_thread3() {
-            take_control().value = 300;
+            set_resource(Resource { value: 300 });
             thread::sleep(Duration::from_millis(SLEEP_TIME));
-            assert_eq!(300, take_control().value);
+            assert_eq!(300, get_resource().value);
         }
     }
 }
