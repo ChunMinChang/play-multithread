@@ -9,9 +9,9 @@ pub mod resource_controller {
         unsafe { &RESOURCE }
     }
 
-    pub fn set_resource(x: u32) {
+    pub fn set_resource(resource: Resource) {
         unsafe {
-            RESOURCE.value = x;
+            RESOURCE = resource;
         }
     }
 
@@ -28,14 +28,14 @@ pub mod resource_controller {
 
         #[test]
         fn test_write_then_read_thread1() {
-            set_resource(100);
+            set_resource(Resource { value: 100 });
             thread::sleep(Duration::from_millis(SLEEP_TIME));
             assert_eq!(100, get_resource().value);
         }
 
         #[test]
         fn test_write_then_read_thread2() {
-            set_resource(200);
+            set_resource(Resource { value: 200 });
             thread::sleep(Duration::from_millis(SLEEP_TIME));
             assert_eq!(200, get_resource().value);
         }

@@ -8,7 +8,7 @@ fn main() {
     let mut handles = vec![];
     for i in 1..5 {
         handles.push(thread::spawn(move || {
-            set_resource(i);
+            set_resource(Resource { value: i });
             thread::sleep(Duration::from_millis(SLEEP_TIME));
             assert_eq!(i, get_resource().value);
         }));
