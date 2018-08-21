@@ -16,9 +16,11 @@ fn main() {
 
     for i in 6..10 {
         handles.push(thread::spawn(move || {
-            take_control().value = i;
+            // It's ok to share mutable borrow among threads.
+            let resource: &mut Resource = take_control();
+            resource.value = i;
             thread::sleep(Duration::from_millis(SLEEP_TIME));
-            assert_eq!(i, take_control().value);
+            assert_eq!(i, resource.value);
         }));
     }
 
