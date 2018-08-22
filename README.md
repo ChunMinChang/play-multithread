@@ -10,7 +10,7 @@ code is in [rwlock branch][rwlock].
 
 ## TO-DO
 - Compare *benchmarking* results between ```Mutex<T>``` and ```RwLock<T>```.
-- Disable running *bench* functions when entering ```$ caego test```.
+- Disable running *bench* functions when entering ```$ cargo test```.
 
 [mutex]: https://github.com/ChunMinChang/play-multithread/tree/mutex "mutex tree"
 [rwlock]: https://github.com/ChunMinChang/play-multithread/tree/rwlock "rwlock tree"
