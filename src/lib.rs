@@ -69,7 +69,7 @@ pub mod resource_controller {
         // This test will pass since all the operations to the static
         // `RESOURCE` are in the same critical section.
         #[test]
-        fn test_write_then_read_thread1() {
+        fn test_hold_lock_then_write_and_read() {
             // The scope of `guard` is a critical section, so no other threads
             // can read or write `RESOURCE` once `guard` is created.
             let mut guard = take_control().lock().unwrap();
@@ -86,14 +86,14 @@ pub mod resource_controller {
         // `value` in `RESOURCE` within the time after calling `set_value()`
         // and before calling `get_value()`.
         #[test]
-        fn test_write_then_read_thread2() {
+        fn test_write_then_read_thread1() {
             set_value(200);
             thread::sleep(Duration::from_millis(SLEEP_TIME));
             assert_eq!(200, get_value());
         }
 
         #[test]
-        fn test_write_then_read_thread3() {
+        fn test_write_then_read_thread2() {
             set_resource(Resource { value: 300 });
             thread::sleep(Duration::from_millis(SLEEP_TIME));
             unsafe {
