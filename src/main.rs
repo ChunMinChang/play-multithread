@@ -7,24 +7,27 @@ fn main() {
     const SLEEP_TIME: u64 = 10;
     let mut handles = vec![];
 
-    // The following `assert` are very likely to fail since
-    // methods in `resource_controller` are not thread-safe!
-
+    // The `assert`s in the following threads are very likely to fail.
+    // The locks for the static `RESOURCE` are released after calling
+    // `set_resource` thus the `value` in `RESOURCE` may be cahnged
+    // before calling `get_resource()`.
     for i in 1..5 {
         handles.push(thread::spawn(move || {
             set_resource(Resource { value: i });
             thread::sleep(Duration::from_millis(SLEEP_TIME));
-            assert_eq!(i, get_resource().value);
+            assert_eq!(i, unsafe { (*get_resource()).value });
         }));
     }
 
+    // The `assert`s in the following threads are always correct since all the
+    // operations to the static `RESOURCE` are in the same critical sections.
     for i in 6..10 {
         handles.push(thread::spawn(move || {
             // It's ok to share mutable borrow among threads.
-            let resource: &mut Resource = take_control();
-            resource.value = i;
+            let mut guard = take_control().write().unwrap();
+            (*guard).value = i;
             thread::sleep(Duration::from_millis(SLEEP_TIME));
-            assert_eq!(i, resource.value);
+            assert_eq!(i, (*guard).value);
         }));
     }
 
