@@ -52,7 +52,7 @@ pub mod resource_controller {
         #[ignore]
         // $ cargo test -- --ignored
         fn deadlock() {
-            // The scope of guard is a critical section
+            // The scope of `_guard` is a critical section.
             let _guard = take_control().lock().unwrap();
             // `get_value()` requests for the mutex that is locked by this
             // thread itself again, so it leads to a deadlock.
@@ -65,15 +65,15 @@ pub mod resource_controller {
             get_value();
             // Acquire a mutex that is already released.
             let _guard = take_control().lock().unwrap();
-            // The mutex is release after guard goes out '}' below.
+            // The mutex is released after `_guard` goes out '}' below.
         }
 
-        // This test will pass since all the operations are in the same
-        // critical section.
+        // This test will pass since all the operations to the static
+        // `RESOURCE` are in the same critical section.
         #[test]
         fn test_write_then_read_thread1() {
-            // The scope of guard is a critical section, so no other threads
-            // can read or write `RESOURCE` once guard is created.
+            // The scope of `guard` is a critical section, so no other threads
+            // can read or write `RESOURCE` once `guard` is created.
             let mut guard = take_control().lock().unwrap();
             (*guard).value = 100;
             thread::sleep(Duration::from_millis(SLEEP_TIME));
@@ -81,10 +81,12 @@ pub mod resource_controller {
         }
 
         // The following tests are very likely to fail.
-        // Before checking `get_value()` with `x` where `x` is the value
-        // passed in `set_value(x)`, the `value` of `RESOURCE` may be changed
+        // Before checking `get_value()` with `x`, where `x` is the value
+        // passed in `set_value(x)`, the `value` in `RESOURCE` may be changed
         // once `set_value(x)` is finished. `set_value` and `get_value` are in
-        // different critical section.
+        // different critical section. That's why other threads may change the
+        // `value` in `RESOURCE` within the time after calling `set_value()`
+        // and before calling `get_value()`.
         #[test]
         fn test_write_then_read_thread2() {
             set_value(200);
