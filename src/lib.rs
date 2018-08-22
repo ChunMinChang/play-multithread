@@ -1,3 +1,6 @@
+#![feature(test)]
+extern crate test;
+
 #[macro_use]
 extern crate lazy_static;
 
@@ -40,6 +43,7 @@ pub mod resource_controller {
         use super::*;
         use std::thread;
         use std::time::Duration;
+        use test::Bencher;
         const SLEEP_TIME: u64 = 10;
 
         // This test will lead to a deadlock or a panic for PoisonError.
@@ -97,6 +101,26 @@ pub mod resource_controller {
                 let resource = &*get_resource();
                 assert_eq!(300, resource.value);
             }
+        }
+
+        #[bench]
+        fn bench_read_write_with_rwlock(b: &mut Bencher) {
+            b.iter(|| {
+                let mut handles = vec![];
+                for i in 0..9 {
+                    handles.push(thread::spawn(move || {
+                        if i % 2 == 0 {
+                            set_value(66);
+                        } else {
+                            get_value();
+                        }
+                    }));
+                }
+
+                for handle in handles {
+                    handle.join().unwrap();
+                }
+            });
         }
     }
 }
