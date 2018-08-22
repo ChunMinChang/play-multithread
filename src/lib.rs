@@ -107,13 +107,9 @@ pub mod resource_controller {
         fn bench_read_write_with_rwlock(b: &mut Bencher) {
             b.iter(|| {
                 let mut handles = vec![];
-                for i in 0..9 {
+                for _i in 0..100 {
                     handles.push(thread::spawn(move || {
-                        if i % 2 == 0 {
-                            set_value(66);
-                        } else {
-                            get_value();
-                        }
+                        get_value();
                     }));
                 }
 
