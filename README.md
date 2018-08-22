@@ -1,7 +1,6 @@
 # Playing Multithread in Rust
 
-The method of ```mod resource_controller``` in *master* brach is not *thread-safe*.
-Try solving this problem by using ```Mutex<T>``` and ```RwLock<T>```.
+```mod resource_controller``` has a static vaiable ```RESOURCE```. It can be accessed and updated by any thread and time. Try using ```Mutex<T>``` and ```RwLock<T>``` to wrap the ```RESOURCE``` and see what it can help.
 
 ## TO-DO
 - Compare *benchmarking* results between ```Mutex<T>``` and ```RwLock<T>```.
