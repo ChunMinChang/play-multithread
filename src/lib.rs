@@ -46,12 +46,10 @@ pub mod resource_controller {
         use test::Bencher;
         const SLEEP_TIME: u64 = 10;
 
-        // The following tests are very likely to fail since
-        // methods in `resource_controller` are not thread-safe!
         #[test]
         #[ignore]
         // $ cargo test -- --ignored
-        fn deadlock() {
+        fn deadlock_hold_lock_then_asking_lock_again() {
             // The scope of `_guard` is a critical section.
             let _guard = take_control().lock().unwrap();
             // `get_value()` requests for the mutex that is locked by this
